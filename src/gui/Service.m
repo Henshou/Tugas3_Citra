@@ -79,9 +79,6 @@ classdef Service < handle
                 sprintf('Jumlah kelas: %d', numel(info.classNames))
                 sprintf('Waktu: %.2f detik', info.time)
             };
-            if ~isempty(info.pythonOutput)
-                infoLines{end + 1} = ['Python: ' info.pythonOutput];
-            end
         end
     end
 end
