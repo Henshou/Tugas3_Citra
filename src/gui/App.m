@@ -119,11 +119,6 @@ classdef App < handle
                     case 'Segmentasi Berbasis Tepi'
                         params = obj.edgeParams();
                         params.method = lower(obj.UI.MenuMethod.Value);
-                        params.dilateRadius = obj.UI.TxtDilateRadius.Value;
-                        params.closeRadius = obj.UI.TxtCloseRadius.Value;
-                        params.minAreaFrac = obj.parseValue(obj.UI.TxtMinArea.Value, ...
-                            'Luas minimum', 0, 1);
-                        params.select = obj.UI.MenuSelect.Value;
                         [labelMap, overlay, segmentInfo] = ...
                             obj.Service.segmentByEdges(obj.ImgInput, params);
                         obj.ImgEdgeMap = segmentInfo.edgeMap;

@@ -31,7 +31,7 @@ def main():
 
     t0 = time.time()
     ck = torch.load(args.weights, map_location="cpu")
-    model = build_model(ck["arch"], pretrained=False)   # tanpa unduh bobot ImageNet/COCO
+    model = build_model(ck["arch"], pretrained=False)   
     model.load_state_dict(ck["model"])
     model.to(device).eval()
 
@@ -60,6 +60,6 @@ def main():
 if __name__ == "__main__":
     try:
         main()
-    except Exception as e:           # pesan jelas untuk ditampilkan di MATLAB
+    except Exception as e:           
         print(f"ERROR: {type(e).__name__}: {e}", file=sys.stderr)
         sys.exit(1)

@@ -13,10 +13,6 @@ classdef Layout < handle
         TxtThreshold matlab.ui.control.EditField
         TxtSigma matlab.ui.control.NumericEditField
         TxtCannyThreshold matlab.ui.control.EditField
-        TxtDilateRadius matlab.ui.control.NumericEditField
-        TxtCloseRadius matlab.ui.control.NumericEditField
-        TxtMinArea matlab.ui.control.EditField
-        MenuSelect matlab.ui.control.DropDown
         TxtMinSize matlab.ui.control.NumericEditField
         TxtSplitThreshold matlab.ui.control.EditField
         TxtMerge matlab.ui.control.EditField
@@ -80,10 +76,6 @@ classdef Layout < handle
             obj.setControlVisibility({obj.LblThreshold, obj.TxtThreshold}, isEdgeSegmentation);
             obj.setControlVisibility({obj.LblSigma, obj.TxtSigma}, isEdgeSegmentation);
             obj.setControlVisibility({obj.LblCannyThreshold, obj.TxtCannyThreshold}, isEdgeSegmentation);
-            obj.setControlVisibility({obj.LblDilateRadius, obj.TxtDilateRadius}, isEdgeSegmentation);
-            obj.setControlVisibility({obj.LblCloseRadius, obj.TxtCloseRadius}, isEdgeSegmentation);
-            obj.setControlVisibility({obj.LblMinArea, obj.TxtMinArea}, isEdgeSegmentation);
-            obj.setControlVisibility({obj.LblSelect, obj.MenuSelect}, isEdgeSegmentation);
 
             obj.setControlVisibility({obj.LblMinSize, obj.TxtMinSize}, isSplitMerge);
             obj.setControlVisibility({obj.LblSplitThreshold, obj.TxtSplitThreshold}, isSplitMerge);
@@ -257,18 +249,6 @@ classdef Layout < handle
             obj.TxtSigma = obj.addNumericField(5, 1.5, 0.1, 10);
             obj.LblCannyThreshold = obj.addParameterLabel('Canny [low high] (auto):', 6);
             obj.TxtCannyThreshold = obj.addTextField(6, '');
-
-            obj.LblDilateRadius = obj.addParameterLabel('Radius dilasi:', 7);
-            obj.TxtDilateRadius = obj.addNumericField(7, 2, 0, 50);
-            obj.LblCloseRadius = obj.addParameterLabel('Radius closing:', 8);
-            obj.TxtCloseRadius = obj.addNumericField(8, 4, 0, 50);
-            obj.LblMinArea = obj.addParameterLabel('Luas minimum (fraksi):', 9);
-            obj.TxtMinArea = obj.addTextField(9, '0.01');
-            obj.LblSelect = obj.addParameterLabel('Pemilihan objek:', 10);
-            obj.MenuSelect = uidropdown(obj.ControlsGrid, 'Items', {'score', 'largest'}, ...
-                'BackgroundColor', 'white', 'FontColor', obj.Colors.dark);
-            obj.MenuSelect.Layout.Row = 10;
-            obj.MenuSelect.Layout.Column = 2;
 
             obj.LblMinSize = obj.addParameterLabel('Ukuran minimum region (px):', 11);
             obj.TxtMinSize = obj.addNumericField(11, 8, 1, 2048);
