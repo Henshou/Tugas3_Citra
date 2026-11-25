@@ -2,7 +2,7 @@
 
 ## a. Nama dan deskripsi program
 
-**Aplikasi Segmentasi Citra Digital** adalah aplikasi GUI MATLAB untuk mencoba tiga pendekatan segmentasi sesuai spesifikasi Tugas 3 IF4073:
+**Aplikasi Segmentasi Citra Digital** adalah aplikasi GUI MATLAB untuk mencoba tiga pendekatan segmentasi citra digital:
 
 1. Segmentasi objek berbasis tepi, yang menampilkan peta tepi dan hasil segmentasi secara bersamaan.
 2. Segmentasi klasik menggunakan **quadtree split and merge**.
