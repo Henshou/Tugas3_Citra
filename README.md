@@ -1,88 +1,59 @@
 # Tugas 3 - Pemrosesan Citra Digital
 
-Aplikasi GUI MATLAB untuk tiga pendekatan segmentasi pada spesifikasi Tugas 3 IF4073:
+## a. Nama dan deskripsi program
 
-1. Segmentasi objek berbasis tepi dengan peta tepi dan hasil segmentasi tampil bersamaan.
+**Aplikasi Segmentasi Citra Digital** adalah aplikasi GUI MATLAB untuk mencoba tiga pendekatan segmentasi sesuai spesifikasi Tugas 3 IF4073:
+
+1. Segmentasi objek berbasis tepi, yang menampilkan peta tepi dan hasil segmentasi secara bersamaan.
 2. Segmentasi klasik menggunakan **quadtree split and merge**.
-3. Semantic segmentation CamVid menggunakan model CNN melalui Python.
+3. Semantic segmentation pada citra jalan CamVid menggunakan model CNN DeepLabV3 melalui Python.
 
-## Menjalankan aplikasi
+### Anggota kelompok
 
-1. Buka folder proyek ini di MATLAB.
-2. Pastikan Image Processing Toolbox tersedia.
-3. Jalankan perintah berikut pada MATLAB Command Window:
+| Nama | NIM | Tugas |
+|---|---:|---|
+| Samuel Gerrard H. Girsang | 13523064 | Laporan, segmentasi berbasis tepi, deep learning |
+| Nadhif Al Rozin | 13523076 | Laporan, GUI, split and merge |
+
+## b. Dependensi
+
+### MATLAB
+
+- MATLAB dengan **Image Processing Toolbox**. Toolbox ini diperlukan untuk operasi citra, termasuk fungsi deteksi tepi MATLAB.
+- Tidak ada toolbox MATLAB tambahan yang diperlukan untuk metode split and merge.
+
+### Python (khusus semantic segmentation)
+
+- Python 3 yang dapat dijalankan dari MATLAB sebagai perintah `python`.
+- Library Python pada `src/deeplearning/python/requirements.txt`:
+  - PyTorch (`torch >= 2.0`)
+  - Torchvision (`torchvision >= 0.15`)
+  - NumPy
+  - Pillow
+- File bobot model PyTorch (`.pth`). Pilih file bobot melalui tombol **Pilih Bobot Model (.pth)** di GUI. GPU/CUDA bersifat opsional; tanpa GPU, inferensi berjalan menggunakan CPU.
+- Dataset CamVid tidak diperlukan untuk menjalankan inferensi apabila bobot `.pth` sudah tersedia. Dataset diperlukan jika model hendak dilatih menggunakan `train.py`; siapkan folder `train`, `train_labels`, `val`, `val_labels`, `test`, dan `test_labels` sesuai format yang dibaca `dataset.py`.
+
+Pasang library Python dengan menjalankan perintah berikut di terminal pada folder proyek:
+
+```bash
+python -m pip install -r src/deeplearning/python/requirements.txt
+```
+
+## c. Tata cara menjalankan program
+
+1. Buka folder `Tugas3_Citra` sebagai folder kerja di MATLAB.
+2. Pastikan MATLAB dan Image Processing Toolbox tersedia. Untuk menggunakan semantic segmentation, pastikan Python dan dependensinya sudah terpasang seperti dijelaskan pada bagian **Dependensi**.
+3. Pada MATLAB Command Window, jalankan:
 
    ```matlab
    main
    ```
 
-4. Tekan **Pilih Citra Input**. Dialog file akan terbuka pada folder `data/bsds500_test_8`, yang memuat delapan citra uji BSDS500 yang disertakan.
-5. Pilih bagian/metode, atur parameter bila diperlukan, lalu tekan **Jalankan**.
+4. Di GUI, tekan **Pilih Citra Input**. Dialog akan terbuka pada `data/bsds500_test_8`, yang berisi delapan citra uji BSDS500; citra lain yang didukung juga dapat dipilih.
+5. Pilih kategori dan metode segmentasi, lalu atur parameter bila diperlukan.
+6. Untuk semantic segmentation, tekan **Pilih Bobot Model (.pth)** dan pilih bobot model yang sesuai.
+7. Tekan **Jalankan** untuk memproses citra. Hasil ditampilkan di panel visualisasi GUI.
 
-## Split and merge
+Metode berbasis tepi dan split and merge dapat dijalankan tanpa setup Python maupun bobot model.
 
-Implementasi pada `src/splitmerge/splitMerge.m` menggunakan dua tahap:
-
-### 1. Split dengan quadtree (divide and conquer)
-
-Untuk setiap blok, dihitung simpangan baku intensitas grayscale:
-
-\[
-\sigma_R = \operatorname{std}(I_R)
-\]
-
-Blok dianggap homogen dan tidak dibagi lagi jika `sigma_R <= splitThreshold`. Jika belum homogen, blok dibagi menjadi empat subblok; apabila salah satu dimensi sudah terlalu kecil, pembagian dilakukan hanya pada dimensi yang masih memungkinkan. Pembagian berhenti ketika blok homogen atau tidak dapat dibagi tanpa melanggar `minSize`.
-
-### 2. Merge region bertetangga
-
-Setelah split, adjacency dihitung berdasarkan ketetanggaan 4-arah (atas, bawah, kiri, kanan). Dua region digabung jika jarak RMS antara rerata warna RGB ternormalisasi keduanya tidak melebihi `mergeThreshold`:
-
-\[
-D(A,B)=\sqrt{\frac{1}{3}\sum_{c\in\{R,G,B\}}
-(\mu_{A,c}-\mu_{B,c})^2}
-\]
-
-Rerata warna diperbarui secara berbobot setiap kali dua region digabung. Penggabungan diulang sampai tidak ada pasangan tetangga yang memenuhi predikat. Citra grayscale diperlakukan sebagai RGB dengan tiga kanal bernilai sama.
-
-### Parameter GUI
-
-| Parameter | Nilai awal | Arti dan pengaruh |
-|---|---:|---|
-| Ukuran minimum region (`minSize`) | 8 px | Batas ukuran minimum sisi blok saat quadtree membelah. Nilai lebih besar mengurangi jumlah split. |
-| Threshold split (`splitThreshold`) | 0.05 | Batas simpangan baku intensitas grayscale. Nilai lebih besar membuat lebih banyak blok dianggap homogen sehingga region setelah split cenderung lebih sedikit/besar. |
-| Threshold merge (`mergeThreshold`) | 0.05 | Batas jarak RMS rerata RGB untuk region bertetangga. Nilai lebih besar membuat lebih banyak region digabung sehingga jumlah region akhir berkurang. |
-
-Kedua threshold harus berada pada rentang `[0, 1]`. Panel GUI menampilkan jumlah region setelah split, jumlah region setelah merge, banyak penggabungan, parameter, dan waktu proses. Pada mode Split and Merge, panel visualisasi menampilkan citra asli, peta region setelah split, serta overlay hasil akhir setelah merge.
-
-## Pengujian
-
-Jalankan skrip berikut dari folder proyek di MATLAB:
-
-```matlab
-run('test/splitMergeTest.m')
-```
-
-Skrip memeriksa bahwa tersedia delapan file JPG di `data/bsds500_test_8`, menjalankan split and merge untuk masing-masing citra, menampilkan citra input / hasil split / hasil merge, dan mencetak tabel jumlah region serta waktu proses.
-
-Parameter uji awal mengikuti nilai default GUI (`minSize=8`, `splitThreshold=0.05`, `mergeThreshold=0.05`). Ubah parameter pada skrip untuk menganalisis pengaruh threshold.
-
-## Segmentasi berbasis tepi
-
-Deteksi tepi bukan bagian layar terpisah. Saat memilih **Segmentasi Berbasis Tepi**,
-GUI menampilkan citra asli, peta deteksi tepi, label hasil segmentasi, dan overlay
-objek utama secara bersamaan. Pilih operator (Sobel, Prewitt, Roberts, Laplace,
-LoG, atau Canny) dan sesuaikan parameter deteksi serta morfologi pada panel yang sama.
-
-## Struktur proyek
-
-- `main.m`: entry point GUI.
-- `src/gui/`: tampilan (`Layout.m`), kontrol (`App.m`), dan service pemrosesan (`Service.m`).
-- `src/edge/`: operator deteksi tepi dan segmentasi berbasis tepi.
-- `src/splitmerge/splitMerge.m`: implementasi split and merge.
-- `src/deeplearning/`: integrasi MATLAB-Python untuk semantic segmentation.
-- `data/bsds500_test_8/`: delapan citra uji BSDS500.
-- `test/`: skrip pengujian tiap bagian.
-
-## Deep learning
-
-Bagian semantic segmentation memerlukan Python dengan dependensi dalam `src/deeplearning/python/requirements.txt`, dataset CamVid yang sudah disiapkan sesuai struktur yang dibaca `dataset.py`, dan bobot model `.pth` hasil training. File bobot `.pth` tidak disertakan di repositori ini; latih model menggunakan `train.py` atau pilih bobot yang sudah tersedia melalui tombol **Pilih Bobot Model (.pth)** di GUI.
+Untuk melatih model, jalankan `train.py` dengan argumen `--data_dir` yang menunjuk ke folder dataset CamVid. Skrip akan menyimpan bobot model `.pth`; pilih bobot tersebut di GUI untuk melakukan inferensi.
