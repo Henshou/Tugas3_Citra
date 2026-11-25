@@ -54,6 +54,8 @@ classdef Service < handle
         function infoLines = formatSegmentInfo(~, info)
             infoLines = {
                 ['Metode: ' info.method]
+                sprintf('Sigma: %.2f', info.sigma)
+                sprintf('Threshold: %.2f', info.thresh)
                 sprintf('Jumlah objek: %d', info.numObjects)
                 sprintf('Objek utama: %d', info.mainLabel)
                 sprintf('Waktu: %.2f detik', info.time)

@@ -1,4 +1,4 @@
-function main
+    function main
 %MAIN Menjalankan GUI Tugas 3.
 
     rootFolder = fileparts(mfilename('fullpath'));

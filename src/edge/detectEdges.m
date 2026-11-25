@@ -16,9 +16,9 @@ function [edgeMap, mag, info] = detectEdges(gray, method, params)
     switch lower(method)
         case 'canny'
             if isempty(params.cannyThresh)
-                edgeMap = edge(gray, 'canny', [], params.sigma);
+                [edgeMap, usedThresh] = edge(gray, 'canny', [], params.sigma);
             else
-                edgeMap = edge(gray, 'canny', params.cannyThresh, params.sigma);
+                [edgeMap, usedThresh] = edge(gray, 'canny', params.cannyThresh, params.sigma);
             end
             mag = double(edgeMap);
 
@@ -45,16 +45,17 @@ function [edgeMap, mag, info] = detectEdges(gray, method, params)
 
             th = params.thresh;
             if isempty(th), th = otsuThreshold(mag); end
+            usedThresh = th;
             edgeMap = mag > th;
 
         case 'laplace'
             smoothed = smoothImage(gray, params.sigma);
             lap = applyKernel(smoothed, [0 1 0; 1 -4 1; 0 1 0]);
-            [edgeMap, mag] = zeroCrossing(lap, params.thresh);
+            [edgeMap, mag, usedThresh] = zeroCrossing(lap, params.thresh);
 
         case 'log'
             lg = applyKernel(gray, logKernel(params.sigma));
-            [edgeMap, mag] = zeroCrossing(lg, params.thresh);
+            [edgeMap, mag, usedThresh] = zeroCrossing(lg, params.thresh);
 
         otherwise
             error('Metode "%s" tidak dikenal.', method);
@@ -63,6 +64,12 @@ function [edgeMap, mag, info] = detectEdges(gray, method, params)
     edgeMap = logical(edgeMap);
     info.method = lower(method);
     info.sigma  = params.sigma;
+    info.thresh = usedThresh;
+    if strcmpi(method, 'canny')
+        info.threshAuto = isempty(params.cannyThresh);   
+    else
+        info.threshAuto = isempty(params.thresh);      
+    end
 end
 
 % HELPER
@@ -99,7 +106,7 @@ function k = logKernel(sigma)
     k = k - mean(k(:));     
 end
 
-function [edgeMap, mag] = zeroCrossing(L, thFrac)
+function [edgeMap, mag, th] = zeroCrossing(L, thFrac)
     [H, W] = size(L);
     S = zeros(H, W);  
 

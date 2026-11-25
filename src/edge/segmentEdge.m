@@ -15,7 +15,7 @@ function [labelMap, overlay, info] = segmentEdge(img, params)
     gray = gray / 255;
     [H, W] = size(gray);
 
-    [edgeMap, mag] = detectEdges(gray, params.method, params);
+    [edgeMap, mag, edgeInfo] = detectEdges(gray, params.method, params);
 
     bw = edgeMap;
     if params.dilateRadius > 0
@@ -35,14 +35,17 @@ function [labelMap, overlay, info] = segmentEdge(img, params)
     labelMap = bwlabel(filled, 8);
     numObjects = max(labelMap(:));
 
-    info.edgeMap    = edgeMap;
-    info.mag        = mag;
-    info.filled     = filled;
-    info.method     = params.method;
+    info.edgeMap = edgeMap;
+    info.mag = mag;
+    info.filled = filled;
+    info.method = params.method;
+    info.sigma = params.sigma;
+    info.thresh = edgeInfo.thresh;
+    info.threshAuto = edgeInfo.threshAuto;
     info.numObjects = numObjects;
-    info.mainLabel  = 0;
-    info.mainMask   = false(H, W);
-    info.stats      = [];
+    info.mainLabel = 0;
+    info.mainMask = false(H, W);
+    info.stats = [];
 
     if numObjects == 0
         warning('segmentByEdge:noObject', ...

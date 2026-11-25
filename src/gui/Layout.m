@@ -17,12 +17,9 @@ classdef Layout < handle
         TxtSplitThreshold matlab.ui.control.EditField
         TxtMerge matlab.ui.control.EditField
         TxtAlpha matlab.ui.control.EditField
-        TxtDevice matlab.ui.control.EditField
         LblThreshold matlab.ui.control.Label
         LblSigma matlab.ui.control.Label
         LblCannyThreshold matlab.ui.control.Label
-        LblDilateRadius matlab.ui.control.Label
-        LblCloseRadius matlab.ui.control.Label
         LblMinArea matlab.ui.control.Label
         LblSelect matlab.ui.control.Label
         LblMinSize matlab.ui.control.Label
@@ -30,17 +27,18 @@ classdef Layout < handle
         LblMerge matlab.ui.control.Label
         LblSplitHelp matlab.ui.control.Label
         LblAlpha matlab.ui.control.Label
-        LblDevice matlab.ui.control.Label
         LblModel matlab.ui.control.Label
         LblStatus matlab.ui.control.Label
         AxInput matlab.ui.control.UIAxes
         AxEdge matlab.ui.control.UIAxes
         AxOutput matlab.ui.control.UIAxes
         AxOverlay matlab.ui.control.UIAxes
+        AxStats matlab.ui.control.UIAxes
         PnlInput matlab.ui.container.Panel
         PnlEdge matlab.ui.container.Panel
         PnlOutput matlab.ui.container.Panel
         PnlOverlay matlab.ui.container.Panel
+        PnlStats matlab.ui.container.Panel
         TxtInfo matlab.ui.control.TextArea
         Colors struct
     end
@@ -83,7 +81,6 @@ classdef Layout < handle
             obj.LblSplitHelp.Visible = obj.onOff(isSplitMerge);
 
             obj.setControlVisibility({obj.LblAlpha, obj.TxtAlpha}, isDeepLearning);
-            obj.setControlVisibility({obj.LblDevice, obj.TxtDevice}, isDeepLearning);
             obj.BtnModel.Visible = obj.onOff(isDeepLearning);
             obj.LblModel.Visible = obj.BtnModel.Visible;
 
@@ -133,6 +130,27 @@ classdef Layout < handle
         end
 
         function configureVisualization(obj, category)
+            isDeepLearning = strcmp(category, 'Deep Learning / Semantic Segmentation');
+            obj.PnlStats.Visible = obj.onOff(isDeepLearning);
+            if isDeepLearning
+                obj.PnlInput.Layout.Row = 1;
+                obj.PnlInput.Layout.Column = 1;
+                obj.PnlOutput.Layout.Row = 1;
+                obj.PnlOutput.Layout.Column = 2;
+                obj.PnlOverlay.Layout.Row = 2;
+                obj.PnlOverlay.Layout.Column = 1;
+                obj.PnlStats.Layout.Row = 2;
+                obj.PnlStats.Layout.Column = 2;
+                obj.PnlEdge.Visible = 'off';
+                obj.PnlInput.Visible = 'on';
+                obj.PnlOutput.Visible = 'on';
+                obj.PnlOverlay.Visible = 'on';
+            else
+                obj.configureStandardVisualization(category);
+            end
+        end
+
+        function configureStandardVisualization(obj, category)
             if strcmp(category, 'Segmentasi Berbasis Tepi')
                 obj.PnlInput.Layout.Row = 1;
                 obj.PnlInput.Layout.Column = 1;
@@ -182,8 +200,11 @@ classdef Layout < handle
 
     methods (Access = private)
         function buildUI(obj, closeRequestCallback)
+            scr = get(groot, 'ScreenSize');            
+            w = min(1440, scr(3) - 40);               
+            h = min(850,  scr(4) - 140);              
             obj.Fig = uifigure('Name', 'Tugas 3 - Segmentasi Citra', ...
-                'Position', [25 35 1440 850], 'Color', obj.Colors.background, ...
+                'Position', [20 60 w h], 'Color', obj.Colors.background, ...
                 'CloseRequestFcn', closeRequestCallback);
             obj.MainGrid = uigridlayout(obj.Fig, [3 1]);
             obj.MainGrid.RowHeight = {48, '1x', 30};
@@ -223,7 +244,7 @@ classdef Layout < handle
             obj.ControlsGrid.Padding = [9 9 9 9];
 
             obj.BtnLoad = uibutton(obj.ControlsGrid, 'push', ...
-                'Text', 'Pilih Citra Input (BSDS500 tersedia)', ...
+                'Text', 'Pilih Citra Input', ...
                 'BackgroundColor', obj.Colors.primary, 'FontColor', 'white', 'FontWeight', 'bold');
             obj.BtnLoad.Layout.Row = 1;
             obj.BtnLoad.Layout.Column = [1 2];
@@ -267,8 +288,7 @@ classdef Layout < handle
 
             obj.LblAlpha = obj.addParameterLabel('Alpha overlay:', 14);
             obj.TxtAlpha = obj.addTextField(14, '0.5');
-            obj.LblDevice = obj.addParameterLabel('Device (auto/cpu/cuda):', 15);
-            obj.TxtDevice = obj.addTextField(15, 'auto');
+
 
             obj.BtnModel = uibutton(obj.ControlsGrid, 'push', 'Text', 'Pilih Bobot Model (.pth)', ...
                 'BackgroundColor', obj.Colors.secondary, 'FontColor', 'white');
@@ -338,8 +358,6 @@ classdef Layout < handle
             obj.TxtInfo = uitextarea(grid, 'Editable', 'off', ...
                 'Value', {'Belum ada citra.', 'Pilih metode lalu jalankan pemrosesan.'}, ...
                 'BackgroundColor', obj.Colors.card, 'FontColor', obj.Colors.dark);
-            obj.BtnHistogram = uibutton(grid, 'push', 'Text', 'Tampilkan Histogram', ...
-                'BackgroundColor', obj.Colors.secondary, 'FontColor', 'white');
         end
 
         function buildVisualization(obj, parent)
@@ -353,6 +371,8 @@ classdef Layout < handle
             [obj.PnlEdge, obj.AxEdge] = obj.makeAxes(grid, 'Peta Deteksi Tepi', 1, 2);
             [obj.PnlOutput, obj.AxOutput] = obj.makeAxes(grid, 'Mask / Label Segmen', 2, 1);
             [obj.PnlOverlay, obj.AxOverlay] = obj.makeAxes(grid, 'Overlay / Hasil Segmentasi', 2, 2);
+            [obj.PnlStats, obj.AxStats] = obj.makeAxes(grid, 'Proporsi Kelas', 2, 2);
+            obj.PnlStats.Visible = 'off';          % hanya tampil di bagian Deep Learning
             obj.PnlEdge.Visible = 'off';
             obj.PnlOutput.Layout.Row = 1;
             obj.PnlOutput.Layout.Column = 2;

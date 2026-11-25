@@ -29,7 +29,6 @@ classdef App < handle
             obj.UI.BtnLoad.ButtonPushedFcn = @(~,~) obj.loadImage();
             obj.UI.BtnRun.ButtonPushedFcn = @(~,~) obj.run();
             obj.UI.BtnReset.ButtonPushedFcn = @(~,~) obj.resetGui();
-            obj.UI.BtnHistogram.ButtonPushedFcn = @(~,~) obj.UI.showHistogram(obj.ImgInput);
             obj.UI.BtnModel.ButtonPushedFcn = @(~,~) obj.loadModel();
             obj.UI.MenuCategory.ValueChangedFcn = @(~,~) obj.onCategoryChanged();
             obj.UI.MenuMethod.ValueChangedFcn = @(~,~) obj.onMethodChanged();
@@ -144,7 +143,7 @@ classdef App < handle
                     otherwise
                         params = struct( ...
                             'pythonExe', 'python', ...
-                            'device', strtrim(obj.UI.TxtDevice.Value), ...
+                            'device', 'auto', ...
                             'alpha', obj.parseValue(obj.UI.TxtAlpha.Value, 'Alpha overlay', 0, 1));
                         if ~isempty(obj.ModelPath), params.weights = obj.ModelPath; end
                         [~, overlay, semanticInfo] = ...
@@ -152,6 +151,7 @@ classdef App < handle
                         obj.ImgOutput = semanticInfo.colorMask;
                         obj.ImgOverlay = overlay;
                         obj.updateInfo(obj.Service.formatSemanticInfo(semanticInfo));
+                        plotClassStats(obj.UI.AxStats, semanticInfo, 'dark');
                 end
 
                 imshow(obj.ImgOutput, 'Parent', obj.UI.AxOutput);
